@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block head %} 
+
+<title> Tanks </title>
+
+{% endblock %}
+
+{% block body %} 
+
+<div class="title">
+    <h1>Tanks</h1>
+
+    <form action='/' method="GET">
+
+        <input type="submit" value="Back to song list"/>
+    </form>
+</div>
+
+<form action='#' method="GET"></form>
+    {% for tank in tanks %}
+    <ul>
+        <h2> {{ tank.model }} </h2>
+        <h2> {{ tank.origin }} </h2>
+        <h2> {{ tank.year }} </h2>
+        <br>
+      
+    </ul>
+        
+
+    {% endfor %}
+
+
+
+</form>
+
+
+
+{% endblock %}

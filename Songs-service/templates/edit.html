@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block head %} 
+
+<title> Songs </title>
+
+{% endblock %}
+
+{% block body %} 
+
+<div class="title">
+
+    <h1>Edit song</h1>
+
+    <form action='/' method="GET">
+
+        <input type="submit" value="Back to song list"/>
+    </form>
+</div>
+
+
+<form action='/edit/{{song.id}}' method="POST">
+
+    <h2>Artist</h2>
+    <input type="text" name="artist" value='{{song.artist}}'/>
+    <h2>Name</h2>
+    <input type="text" name="name" value='{{song.name}}'/>
+    <h2>Date</h2>
+    <input type="date" name="date" value='{{song.date_created}}'/>
+    <h2>Youtube link</h2>
+    <input type="text" name="link" value='{{song.link}}'/>
+    <br>
+    <h2>Origin</h2>
+    <input type="text" name="link" value='{{song.origin}}'/>
+    <br>
+    <input type="submit" value="submit"/>
+</form>
+
+
+
+{% endblock %}

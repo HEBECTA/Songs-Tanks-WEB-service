@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block head %} 
+
+<title> Songs </title>
+
+{% endblock %}
+
+{% block body %} 
+
+
+<div class="title">
+
+    <h1>Add song</h1>
+
+    <form action='/' method="GET">
+
+        <input type="submit" value="Back to song list"/>
+    </form>
+</div>
+
+<form action='#' method="POST">
+
+    <h2>Artist</h2>
+    <input type="text" name="artist"/>
+    <h2>Name</h2>
+    <input type="text" name="name"/>
+    <h2>Date</h2>
+    <input type="date" name="date"/>
+    <h2>Youtube link</h2>
+ 
+    <input type="text" name="link"/>
+    <br> <br>
+    <h2>Origin</h2>
+ 
+    <input type="text" name="origin"/>
+    <br> <br>
+    <input type="submit" value="Add"/>
+</form>
+
+
+
+{% endblock %}

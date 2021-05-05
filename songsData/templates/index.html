@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block head %} 
+
+<title> Songs </title>
+
+{% endblock %}
+
+{% block body %} 
+
+<div class="title">
+    <h1>Playlist</h1>
+
+    <form action='/add' method="GET">
+
+        <input type="submit" value="add song"/>
+    </form>
+</div>
+
+<form action='#' method="GET"></form>
+    {% for song in songs %}
+    <ul>
+        <h2> {{ song.artist }} </h2>
+        <h2> {{ song.name }} </h2>
+        <h2> {{ song.date_created }} </h2>
+        <a href="{{song.link}}" target="_blank"> Youtube </a>
+        <br>
+        <!--input href="/edit/{{song.id}}" type="submit" value="edit"/> -->
+        <a href="/edit/{{song.id}}">Edit</a>
+        <a href="/delete/{{song.id}}">Delete</a>
+        <br>
+        <a href="/tanks/{{song.id}}">Tanks</a>
+    </ul>
+        
+
+    {% endfor %}
+
+
+
+</form>
+
+
+
+{% endblock %}
