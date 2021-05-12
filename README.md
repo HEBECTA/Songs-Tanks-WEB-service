@@ -52,7 +52,7 @@ pvz: curl http://localhost:5001/songs/1 -X GET <br>
 
 (ADD) <br>
 POST http://localhost:5001/songs <br>
-pvz: curl http://localhost:5001/songs -d '{"name":"The Star-Spangled Banner", "artist":"John Stafford Smith", "date_created":"1773-02-03", "link":"https://www.youtube.com/watch?v=cP5---17O4s", "origin":"USA", "tanks":[{"model":"KV-2", "year":1943, "origin":"USA"}, {"model":"KV-3", "year":1944, "origin":"USA"}]}' -H "Content-Type: application/json" -X POST <br>
+pvz: curl http://localhost:5001/songs -d '{"name":"The Star-Spangled Banner", "artist":"John Stafford Smith", "date_created":"1773-02-03", "link":"https://www.youtube.com/watch?v=cP5---17O4s", "origin":"USA", "tanks":[{"model":"M4 Sherman", "year":1943, "origin":"USA"}, {"model":"T34 Calliope", "year":1944, "origin":"USA"}]}' -H "Content-Type: application/json" -X POST <br>
 
 (REMOVE) <br>
 DELETE http://localhost:5001/songs/<songs_id> <br>
@@ -60,7 +60,7 @@ pvz: curl http://localhost:5001/songs/12 -X DELETE <br>
 
 (UPDATE) <br>
 PUT http://localhost:5001/songs/<songs_id> <br>
-pvz: curl http://localhost:5001/songs/21 -d '{"name":"The Star-Spangled Banner", "artist":"John Stafford Smith", "date_created":"1814-02-03", "link":"https://www.youtube.com/watch?v=FqxJ_iuBPCs", "origin":"USA", "tanks":[{"id": 6, "model":"KV-3", "year":2008, "origin":"USA"}]}' -H "Content-Type: application/json" -X PUT <br>
+pvz: curl http://localhost:5001/songs/21 -d '{"name":"The Star-Spangled Banner", "artist":"John Stafford Smith", "date_created":"1814-02-03", "link":"https://www.youtube.com/watch?v=FqxJ_iuBPCs", "origin":"USA", "tanks":[{"id": 6, "model":"M4 Sherman", "year":345, "origin":"USA"}]}' -H "Content-Type: application/json" -X PUT <br>
 
 TANKS <br>
 
