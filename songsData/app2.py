@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request, render_template, redirect
+from flask import Flask, jsonify, request, render_template, redirect, make_response
+from werkzeug.exceptions import RequestTimeout
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
@@ -38,9 +39,6 @@ def get_all():
     songs = Songs.query.all()
     output = []
 
-    response = requests.get(url)
-    data = json.loads(response.text)
-
     for song in songs:
         tanks = []
         currSong = {}
@@ -49,14 +47,20 @@ def get_all():
         currSong['name'] = song.name
         currSong['date_created'] = song.date_created
         currSong['link'] = song.link
+
+        try:
+            response = requests.get(url)
+            data = json.loads(response.text)
+            for dat in data:
+                if dat["origin"] == song.origin:
+                    tanks.append(dat)
         
-        for dat in data:
-            if dat["origin"] == song.origin:
-                tanks.append(dat)
+        except requests.ConnectionError:
+            pass
 
         currSong['tanks'] = tanks
         output.append(currSong)
-        
+
     return jsonify(output)
 
 # curl http://localhost:5001/songs -X GET
@@ -65,8 +69,8 @@ def get_all():
 def get_song(song_id):
     song = Songs.query.get_or_404(song_id)
 
-    response = requests.get(url)
-    data = json.loads(response.text)
+    #response = requests.get(url)
+    #data = json.loads(response.text)
 
     output = []
     tanks = []
@@ -77,12 +81,25 @@ def get_song(song_id):
     currSong['date_created'] = song.date_created
     currSong['link'] = song.link
 
-    for dat in data:
-        if dat["origin"] == song.origin:
-            tanks.append(dat)
+    try:
+        response = requests.get(url)
+        data = json.loads(response.text)
+        for dat in data:
+            if dat["origin"] == song.origin:
+                tanks.append(dat)
+        
+    except requests.ConnectionError:
+        pass
 
     currSong['tanks'] = tanks
     output.append(currSong)
+
+    #for dat in data:
+    #    if dat["origin"] == song.origin:
+    #        tanks.append(dat)
+
+    #currSong['tanks'] = tanks
+    #output.append(currSong)
 
     return jsonify(output)
 
@@ -91,21 +108,21 @@ def get_song(song_id):
 @app.route('/songs', methods=['POST'])
 def add_song():
     songData = request.get_json()
+
     date = datetime.strptime(songData['date_created'], "%Y-%m-%d")
     song = Songs(artist=songData['artist'], name=songData['name'], date_created=date, link=songData['link'], origin=songData['origin'])
-
-
-    
     db.session.add(song)
     db.session.commit()
 
-    #tank = {
-    #    "model": songData["model"],
-    #    "year": songData["year"],
-    #    "origin": songData["origin"]
-    #}
-
-    #response = requests.post(url, data=tank)
+    # timeout nustatyti
+    try:
+        tanks = songData['tanks']
+        for tank in tanks:
+            response = requests.post(url, json = tank)
+            #if response.status_code == 400:
+                #return 400
+    except requests.ConnectionError:
+        return 400
 
 
     resp = make_response()
@@ -129,9 +146,17 @@ def delete_song(song_id):
     currSong['link'] = song.link
     output.append(currSong)
 
-    #temp_url = url + "/" + str(song_id-1)
-    #response = requests.get(temp_url)
 
+    try:
+        response = requests.get(url)
+        data = json.loads(response.text)
+
+        for dat in data:
+            if dat["origin"] == song.origin:
+                response = requests.delete(url + "/" + str(dat["id"]))
+
+    except requests.ConnectionError:
+        pass
 
     db.session.delete(song)
     db.session.commit()
@@ -156,6 +181,30 @@ def edit_song(song_id):
     currSong['name'] = song.name
     currSong['date_created'] = song.date_created
     currSong['link'] = song.link
+
+  
+    tanks = songData['tanks']
+    for tank in tanks:
+        _tank = {}
+        _tank["model"] = tank["model"]
+        _tank["year"] = tank["year"]
+        _tank["origin"] = tank["origin"]
+        requests.put(url + '/' + str(tank["id"]), json = _tank)
+
+    #tanks = {'model': songData['name'], 'year':songData["year"], 'origin':songData["origin"]}
+    #requests.put(url, data = tanks)
+
+    response = requests.get(url)
+    data = json.loads(response.text)
+
+    #tanks = []
+
+    #for dat in data:
+        #if dat["origin"] == song.origin:
+            #tanks.append(dat)
+
+    currSong['tanks'] = tanks
+
     output.append(currSong)
     return jsonify(output)
 
