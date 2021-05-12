@@ -119,6 +119,10 @@ def PutAVehicle(vehicleId):
         error +=  ".Please spefify in Body."
         return Response(json.dumps({"Failure" : error}),status=404, mimetype="application/json")
 
+    if vehicleId > len(vehicles):
+        error = "wrong tank index, exceed array/list"
+        return Response(json.dumps({"Failure" : error}),status=404, mimetype="application/json")
+
     message = ""
     if "model" in data:
         vehicles[vehicleId]["model"] = data["model"]
@@ -141,8 +145,8 @@ def DeleteAVehicle(vehicleId):
         if vehicle["id"] == vehicleId:
             vehicles.remove(vehicle)
             return Response(response=(json.dumps({"Success" : "Deleted"})), status=204, mimetype="application/json")
-        error = "There is no such vehicle in vehicles"
-        return Response(json.dumps({"Failure" : error}),status=400,mimetype="application/json")
+    error = "There is no such vehicle in vehicles"
+    return Response(json.dumps({"Failure" : error}),status=400,mimetype="application/json")
 
 if __name__ == "__main__":
     server.run(host="0.0.0.0", port=5000, debug=True)
