@@ -63,14 +63,10 @@ def get_all():
 
     return jsonify(output)
 
-# curl http://localhost:5001/songs -X GET
 
 @app.route('/songs/<song_id>', methods=['GET'])
 def get_song(song_id):
     song = Songs.query.get_or_404(song_id)
-
-    #response = requests.get(url)
-    #data = json.loads(response.text)
 
     output = []
     tanks = []
@@ -94,16 +90,10 @@ def get_song(song_id):
     currSong['tanks'] = tanks
     output.append(currSong)
 
-    #for dat in data:
-    #    if dat["origin"] == song.origin:
-    #        tanks.append(dat)
-
-    #currSong['tanks'] = tanks
-    #output.append(currSong)
 
     return jsonify(output)
 
-# curl http://localhost:5001/songs/1 -X GET
+
 
 @app.route('/songs', methods=['POST'])
 def add_song():
@@ -114,15 +104,16 @@ def add_song():
     db.session.add(song)
     db.session.commit()
 
-    # timeout nustatyti
+    
     try:
         tanks = songData['tanks']
         for tank in tanks:
             response = requests.post(url, json = tank)
-            #if response.status_code == 400:
-                #return 400
+
     except requests.ConnectionError:
-        return 400
+        resp = make_response()
+        resp.status_code = 503
+        return resp
 
 
     resp = make_response()
@@ -131,7 +122,7 @@ def add_song():
     resp.headers['Content-Location'] = f'http://localhost:5000/songs/{song.id}'
     return resp
 
-# curl http://localhost:5001/songs -d '{"name":"daina", "artist":"muzikantas", "date_created":"2018-02-03", "link":"www.google.com", "origin":"salis"}' -H "Content-Type: application/json" -X POST
+
 
 
 @app.route('/songs/<song_id>', methods=['DELETE'])
@@ -163,7 +154,7 @@ def delete_song(song_id):
 
     return jsonify(output)
 
-# curl http://localhost:5001/songs/12 -X DELETE
+
 
 @app.route('/songs/<song_id>', methods=['PUT'])
 def edit_song(song_id):
@@ -191,24 +182,18 @@ def edit_song(song_id):
         _tank["origin"] = tank["origin"]
         requests.put(url + '/' + str(tank["id"]), json = _tank)
 
-    #tanks = {'model': songData['name'], 'year':songData["year"], 'origin':songData["origin"]}
-    #requests.put(url, data = tanks)
+
 
     response = requests.get(url)
     data = json.loads(response.text)
 
-    #tanks = []
-
-    #for dat in data:
-        #if dat["origin"] == song.origin:
-            #tanks.append(dat)
 
     currSong['tanks'] = tanks
 
     output.append(currSong)
     return jsonify(output)
 
-# curl http://localhost:5001/songs/12 -d '{"name":"daina2", "artist":"muzikantas2", "date_created":"2018-02-03", "link":"www.google.com", "origin":"salis"}' -H "Content-Type: application/json" -X PUT
+
 
 
 ###############################################################################################################
@@ -240,8 +225,6 @@ def add():
     if request.method == 'POST':
         artist = request.form["artist"]
         name = request.form["name"]
-        #print("DATA ATSPAUSDINTA")
-        #print(request.form["date"])
         date = datetime.strptime (request.form["date"], "%Y-%m-%d")
         link = request.form["link"]
         data = Songs(artist=artist, name=name, date_created=date, link=link)
