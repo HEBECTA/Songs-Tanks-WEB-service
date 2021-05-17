@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template, redirect, make_response
+from werkzeug.exceptions import RequestTimeout
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
@@ -7,11 +8,11 @@ import json
 app = Flask(__name__)
 db = SQLAlchemy(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/songs'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@linkas/songs'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-url = 'http://localhost:5002/api/vehicles'
+url = 'http://url:5000/api/vehicles'
 
 class Songs(db.Model):
     __tablename__ = 'songs'
@@ -21,7 +22,6 @@ class Songs(db.Model):
     date_created = db.Column(db.Date, nullable=False, default='N/A')
     link = db.Column(db.String(500))
     origin = db.Column(db.String(50), nullable=False)
-    
 
     def __init__(self, artist, name, date_created, link, origin):
         self.artist = artist
@@ -38,73 +38,82 @@ class Songs(db.Model):
 def get_all():
     songs = Songs.query.all()
     output = []
-    tanks = []
-    i = 0
+
     for song in songs:
+        tanks = []
         currSong = {}
         currSong['id'] = song.id
         currSong['artist'] = song.artist
         currSong['name'] = song.name
         currSong['date_created'] = song.date_created
         currSong['link'] = song.link
+
+        try:
+            response = requests.get(url)
+            data = json.loads(response.text)
+            for dat in data:
+                if dat["origin"] == song.origin:
+                    tanks.append(dat)
         
+        except requests.ConnectionError:
+            pass
 
-        #temp_url = url + "/" + str(i)
-
-        response = requests.get(url)
-
-        print(response)
-
-        tanks.append(response.json())
         currSong['tanks'] = tanks
-   
         output.append(currSong)
 
-        #output.append(response.json())
-
-        i += 1
-        
     return jsonify(output)
 
-# curl http://localhost:5000/songs -X GET
 
 @app.route('/songs/<song_id>', methods=['GET'])
 def get_song(song_id):
     song = Songs.query.get_or_404(song_id)
+
     output = []
+    tanks = []
     currSong = {}
     currSong['id'] = song.id
     currSong['artist'] = song.artist
     currSong['name'] = song.name
     currSong['date_created'] = song.date_created
     currSong['link'] = song.link
+
+    try:
+        response = requests.get(url)
+        data = json.loads(response.text)
+        for dat in data:
+            if dat["origin"] == song.origin:
+                tanks.append(dat)
+        
+    except requests.ConnectionError:
+        pass
+
+    currSong['tanks'] = tanks
     output.append(currSong)
 
-    #temp_url = url + "/" + str(song_id-1)
-    #response = requests.get(temp_url)
-    #output.append(response.json())
 
     return jsonify(output)
 
-# curl http://localhost:5000/songs/1 -X GET
+
 
 @app.route('/songs', methods=['POST'])
 def add_song():
     songData = request.get_json()
+
     date = datetime.strptime(songData['date_created'], "%Y-%m-%d")
     song = Songs(artist=songData['artist'], name=songData['name'], date_created=date, link=songData['link'], origin=songData['origin'])
     db.session.add(song)
     db.session.commit()
 
+    
+    try:
+        tanks = songData['tanks']
+        for tank in tanks:
+            response = requests.post(url, json = tank)
 
-
-    #tank = {
-    #    "model": songData["model"],
-    #    "year": songData["year"],
-    #    "origin": songData["origin"]
-    #}
-
-    #response = requests.post(url, data=tank)
+    except requests.ConnectionError:
+        resp = make_response()
+        resp.status_code = 503
+        return resp
 
 
     resp = make_response()
@@ -113,7 +122,7 @@ def add_song():
     resp.headers['Content-Location'] = f'http://localhost:5000/songs/{song.id}'
     return resp
 
-# curl http://localhost:5000/songs -d '{"name":"daina", "artist":"muzikantas", "date_created":"2018-02-03", "link":"www.google.com"}' -H "Content-Type: application/json" -X POST
+
 
 
 @app.route('/songs/<song_id>', methods=['DELETE'])
@@ -128,16 +137,24 @@ def delete_song(song_id):
     currSong['link'] = song.link
     output.append(currSong)
 
-    #temp_url = url + "/" + str(song_id-1)
-    #response = requests.get(temp_url)
 
+    try:
+        response = requests.get(url)
+        data = json.loads(response.text)
+
+        for dat in data:
+            if dat["origin"] == song.origin:
+                response = requests.delete(url + "/" + str(dat["id"]))
+
+    except requests.ConnectionError:
+        pass
 
     db.session.delete(song)
     db.session.commit()
 
     return jsonify(output)
 
-# curl http://localhost:5000/songs/12 -X DELETE
+
 
 @app.route('/songs/<song_id>', methods=['PUT'])
 def edit_song(song_id):
@@ -155,10 +172,28 @@ def edit_song(song_id):
     currSong['name'] = song.name
     currSong['date_created'] = song.date_created
     currSong['link'] = song.link
+
+  
+    tanks = songData['tanks']
+    for tank in tanks:
+        _tank = {}
+        _tank["model"] = tank["model"]
+        _tank["year"] = tank["year"]
+        _tank["origin"] = tank["origin"]
+        requests.put(url + '/' + str(tank["id"]), json = _tank)
+
+
+
+    response = requests.get(url)
+    data = json.loads(response.text)
+
+
+    currSong['tanks'] = tanks
+
     output.append(currSong)
     return jsonify(output)
 
-# curl http://localhost:5000/songs/12 -d '{"name":"daina2", "artist":"muzikantas2", "date_created":"2018-02-03", "link":"www.google.com"}' -H "Content-Type: application/json" -X PUT
+
 
 
 ###############################################################################################################
@@ -190,8 +225,6 @@ def add():
     if request.method == 'POST':
         artist = request.form["artist"]
         name = request.form["name"]
-        #print("DATA ATSPAUSDINTA")
-        #print(request.form["date"])
         date = datetime.strptime (request.form["date"], "%Y-%m-%d")
         link = request.form["link"]
         data = Songs(artist=artist, name=name, date_created=date, link=link)
