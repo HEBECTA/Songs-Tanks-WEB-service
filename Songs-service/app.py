@@ -4,15 +4,16 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 import json
+import socket
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@linkas/songs'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@db:5432/songs'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-url = 'http://url:5000/api/vehicles'
+url = 'http://tanks:5000/api/vehicles'
 
 class Songs(db.Model):
     __tablename__ = 'songs'
@@ -59,7 +60,10 @@ def get_all():
             pass
 
         currSong['tanks'] = tanks
+        currSong['ip'] = socket.gethostbyname(socket.gethostname())
         output.append(currSong)
+
+
 
     return jsonify(output)
 
