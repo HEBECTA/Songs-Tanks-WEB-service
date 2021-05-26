@@ -120,5 +120,5 @@ docker service create \
   "date_created" : "\<release date\>", <br>
   "link" : "\<youtube url\>" <br>
   "tanks" : [{"(json tank list)"}] <br>
-  "ip" : <host ip> <br>
+  "ip" : "\<ip address\>" <br>
 }<br>
