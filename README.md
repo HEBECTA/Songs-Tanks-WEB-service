@@ -73,3 +73,52 @@ curl http://localhost:5002/api/vehicles -d '{"model":"KV-2", "year":1940, "origi
 curl http://localhost:5002/api/vehicles/4 -X DELETE
 
 curl http://localhost:5002/api/vehicles/4 -d '{"model":"IS-2", "year":1943, "origin":"USSR" }' -H "Content-Type: application/json" -X PUT
+
+
+<br>
+
+Load balancer -> docker swarm
+
+<br>
+
+Kviesti:
+
+<br>
+
+docker swarm init --advertise-addr 127.0.0.1
+
+<br>
+
+docker stack deploy -c docker-compose.yml nodeapp
+
+<br>
+
+docker service scale nodeapp_songs=4
+
+<br>
+
+Paziureti paleistus servisus adresu localhost:8081
+
+<br>
+
+docker service create \
+  --name=viz \
+  --publish=8081:8080/tcp \
+  --constraint=node.role==manager \
+  --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+  dockersamples/visualizer
+  
+  <br>
+  
+  Daug kartu kvietus localhost:5001/songs gauname json su specifiniu serviso ip
+  
+  SONG DATA STRUCTURE: <br>
+{ <br>
+  "id" : "\<unique identification number\>", <br>
+  "artist" : "\<artist name\>", <br>
+  "name" : "\<song name\>", <br>
+  "date_created" : "\<release date\>", <br>
+  "link" : "\<youtube url\>" <br>
+  "tanks" : [{"(json tank list)"}] <br>
+  "ip" : <host ip> <br>
+}<br>
