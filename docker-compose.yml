@@ -17,6 +17,9 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - PGDATA=/var/lib/postgresql/data
+
+    networks: 
+      - local_net
   
   pgAdmin:
 
@@ -30,16 +33,18 @@ services:
     ports:
       - "8080:80"
 
-    links:
-      - "db:pgsql-server"
-
     depends_on: 
       - db
 
-    volumes:
-      - ./pgadmin-data/var/lib/pgadmin
+    networks: 
+      - local_net
+
+#    volumes:
+#      - ./pgadmin-data/var/lib/pgadmin
 
   tanks:
+
+    image: tanks
 
     build: ./Tank-Warehouse-Web-service
 
@@ -48,10 +53,18 @@ services:
     ports:
       - "5002:5000"
 
+    networks: 
+      - local_net
+
+#    deploy:
+#        replicas: 4
+
     volumes:
       - ./Tank-Warehouse-Web-service:/code
 
   songs:
+
+    image: songs
 
     build: ./Songs-service
 
@@ -62,9 +75,8 @@ services:
       - tanks
       - db
 
-    links:
-      - db:linkas
-      - tanks:url
+    networks: 
+      - local_net
 
     volumes:
       - ./songsData:/app
@@ -73,3 +85,6 @@ volumes:
   pgadmin-data:
   pgdata:
   songsData:    
+
+networks: 
+  local_net:
